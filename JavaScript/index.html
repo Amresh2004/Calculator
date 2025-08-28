@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Calculator with Secret Slider</title>
+    <style>
+      body {
+        margin: 0;
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: linear-gradient(150deg, #55605d, #0d0e0f);
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        overflow: hidden;
+      }
+
+      .calculator {
+        background: linear-gradient(145deg, #2a2a34, #050405);
+        padding: 20px;
+        border-radius: 20px;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 625);
+        width: 330px;
+        transition: opacity 0.5s ease;
+        z-index: 1;
+      }
+
+      #result {
+        width: 90%;
+        height: 70px;
+        font-size: 28px;
+        text-align: right;
+        padding: 15px;
+        border: none;
+        border-radius: 12px;
+        margin-bottom: 20px;
+        background: #f9f9f9;
+        color: #333;
+        box-shadow: inset 2px 2px 6px rgba(0, 0, 0, 0.2);
+      }
+
+      .buttons {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 12px;
+      }
+
+      button {
+        height: 60px;
+        border: none;
+        border-radius: 12px;
+        font-size: 20px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+
+      button.num {
+        background: #f1f1f1;
+        color: #333;
+      }
+      button.num:hover {
+        background-color: #ffffff;
+      }
+
+      button.op {
+        background: #ffca28;
+        color: #000;
+      }
+      button.op:hover {
+        background: #ffb300;
+      }
+
+      button.clear {
+        background: #ff6b6b;
+        color: white;
+      }
+      button.clear:hover {
+        background: #e63946;
+      }
+
+      button.equal {
+        grid-column: span 2;
+        background: linear-gradient(135deg, #43cea2, #185a9d);
+        color: white;
+        font-size: 22px;
+      }
+      button.equal:hover {
+        background: linear-gradient(135deg, #2bc0e4, #185a9d);
+      }
+
+      /* ===== Slider Fullscreen ===== */
+      .slider {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: black;
+        z-index: 999;
+        overflow: hidden;
+      }
+
+      .slides {
+        display: flex;
+        width: 100%;
+        height: 100%;
+        transition: transform 0.5s ease;
+      }
+
+      .slides img {
+        width: 100vw;
+        height: 100vh;
+        object-fit: cover;
+        flex-shrink: 0;
+      }
+
+      /* Controls */
+      .close-btn,
+      .prev,
+      .next {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 40px;
+        color: white;
+        background: rgba(0, 0, 0, 0.5);
+        border: none;
+        cursor: pointer;
+        padding: 10px 15px;
+        border-radius: 50%;
+        z-index: 1000;
+      }
+
+      .close-btn {
+        top: 20px;
+        right: 20px;
+        transform: none;
+        font-size: 30px;
+      }
+
+      .prev {
+        left: 20px;
+      }
+      .next {
+        right: 20px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="calculator">
+      <input type="text" id="result" disabled />
+      <div class="buttons">
+        <button class="clear">C</button>
+        <button class="back op">⌫</button>
+        <button class="op">%</button>
+        <button class="op">÷</button>
+        <button class="num">7</button>
+        <button class="num">8</button>
+        <button class="num">9</button>
+        <button class="op">×</button>
+        <button class="num">4</button>
+        <button class="num">5</button>
+        <button class="num">6</button>
+        <button class="op">-</button>
+        <button class="num">1</button>
+        <button class="num">2</button>
+        <button class="num">3</button>
+        <button class="op">+</button>
+        <button class="num">0</button>
+        <button class="num">.</button>
+        <button class="equal">=</button>
+      </div>
+    </div>
+
+    <!-- Fullscreen Slider -->
+    <div class="slider" id="slider">
+      <button class="close-btn" id="closeSlider">✖</button>
+      <button class="prev" id="prev">⟨</button>
+      <div class="slides" id="slides">
+        <img src="BM Black.jpg" alt="Image 1" />
+        <img src="BM.jpg" alt="Image 2" />
+        <img src="BMW M8.jpg" alt="Image 3" />
+        <img
+          src="bmw-s1000rr-sports-bikes-5k-4480x2520-6353.jpg"
+          alt="Image 4"
+        />
+        <img src="bmw.jpg" alt="Image 5" />
+        <img src="download (1).jpg" alt="Image 6" />
+        <img src="download (2).jpg" alt="Image 7" />
+        <img src="download (3).jpg" alt="Image 8" />
+        <img src="lambo.png" alt="Image 9" />
+        <img src="Screenshot 2025-07-20 153448.png" alt="Image 10" />
+      </div>
+      <button class="next" id="next">⟩</button>
+    </div>
+
+    <script>
+      const result = document.getElementById("result");
+      const calculatorButtons = document.querySelectorAll(".calculator button");
+      const calculator = document.querySelector(".calculator");
+      const slider = document.getElementById("slider");
+      const slides = document.getElementById("slides");
+      const closeSlider = document.getElementById("closeSlider");
+      const prev = document.getElementById("prev");
+      const next = document.getElementById("next");
+
+      let currentIndex = 0;
+      const totalSlides = slides.children.length;
+
+      function updateSlide() {
+        slides.style.transform = `translateX(-${currentIndex * 100}vw)`;
+      }
+
+      prev.addEventListener("click", () => {
+        currentIndex = (currentIndex - 1 + totalSlides) % totalSlides;
+        updateSlide();
+      });
+
+      next.addEventListener("click", () => {
+        currentIndex = (currentIndex + 1) % totalSlides;
+        updateSlide();
+      });
+
+      closeSlider.addEventListener("click", () => {
+        slider.style.display = "none";
+        calculator.style.opacity = "1";
+      });
+
+      calculatorButtons.forEach((button) => {
+        button.addEventListener("click", () => {
+          if (button.classList.contains("clear")) {
+            result.value = "";
+          } else if (button.classList.contains("back")) {
+            result.value = result.value.slice(0, -1);
+          } else if (button.classList.contains("equal")) {
+            try {
+              result.value = eval(
+                result.value.replace(/÷/g, "/").replace(/×/g, "*")
+              );
+              // Secret trigger
+              if (result.value === "847021") {
+                calculator.style.opacity = "0";
+                slider.style.display = "block";
+                currentIndex = 0;
+                updateSlide();
+              }
+            } catch {
+              result.value = "Error";
+            }
+          } else {
+            result.value += button.textContent;
+          }
+        });
+      });
+
+      // ✅ Keyboard Support
+      document.addEventListener("keydown", (e) => {
+        if (slider.style.display === "block") {
+          if (e.key === "Escape") closeSlider.click();
+          if (e.key === "ArrowLeft") prev.click();
+          if (e.key === "ArrowRight") next.click();
+          return;
+        }
+
+        if (!isNaN(e.key) || e.key === ".") {
+          result.value += e.key;
+        } else if (["+", "-", "*", "/", "%"].includes(e.key)) {
+          result.value += e.key;
+        } else if (e.key === "Backspace") {
+          result.value = result.value.slice(0, -1);
+        } else if (e.key === "Enter") {
+          try {
+            result.value = eval(result.value);
+            if (result.value === "1234") {
+              calculator.style.opacity = "0";
+              slider.style.display = "block";
+              currentIndex = 0;
+              updateSlide();
+            }
+          } catch {
+            result.value = "Error";
+          }
+        }
+      });
+    </script>
+  </body>
+</html>
